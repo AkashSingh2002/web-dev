@@ -2,17 +2,16 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+require('dotenv').config();
 
 const app = express();
 
 // Middleware
 app.use(bodyParser.json());
-app.use(cors({
-    origin: ['https://localhost:3000'],
-}));
+app.use(cors());
 
 // MongoDB Atlas Connection
-const DB_URI = 'mongodb+srv://akashsingh14032000:akash@cluster.9nair.mongodb.net/your_database_name?retryWrites=true&w=majority';
+const DB_URI = process.env.MONGO_URI;
 
 // Connect to MongoDB Atlas
 mongoose.connect(DB_URI)
@@ -100,6 +99,16 @@ app.post('/registrations', async (req, res) => {
     res.status(201).json(registration);
   } catch (err) {
     res.status(500).json({ message: 'Error registering for conference', error: err });
+  }
+});
+
+// Get all registrations (users who have registered for conferences) along with conference data
+app.get('/registrations', async (req, res) => {
+  try {
+    const registrations = await Registration.find().populate('confId', 'title'); // Populate conference title
+    res.json(registrations);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching registrations', error: err });
   }
 });
 
